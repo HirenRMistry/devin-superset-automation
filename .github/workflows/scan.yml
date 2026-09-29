@@ -1,0 +1,55 @@
+name: scan-and-dispatch
+
+# Scheduled remediation loop:
+#   1. check out the target repo
+#   2. scan for remediation candidates (any-types, antd imports, eslint disables, npm audit)
+#   3. upsert GitHub issues labeled `devin-fix` for new findings
+#   4. the dispatcher (running elsewhere) picks up `devin-fix` issues and
+#      creates Devin sessions that open PRs back on the target repo
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours
+  workflow_dispatch:        # manual trigger for demos
+
+permissions:
+  issues: write
+
+env:
+  TARGET_REPO: HirenRMistry/superset
+  DISPATCH_LABEL: devin-fix
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out target repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.TARGET_REPO }}
+          path: target
+
+      - name: Check out automation repo (scanner source)
+        uses: actions/checkout@v4
+        with:
+          path: automation
+
+      - name: Set up Node for npm audit
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run scanner
+        working-directory: automation
+        run: |
+          python scanner/scan.py --repo ../target --out findings.json \
+            --create-issues --target-repo "$TARGET_REPO"
+        env:
+          GH_TOKEN: ${{ secrets.SUPERSET_ISSUES_TOKEN }}
+
+      - name: Upload findings artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: findings
+          path: automation/findings.json
+          retention-days: 30

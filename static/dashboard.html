@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Devin Automation — Superset Remediation</title>
+<meta http-equiv="refresh" content="15">
+<style>
+  :root { color-scheme: dark; }
+  body { font: 14px/1.45 -apple-system, "SF Mono", Menlo, monospace; background:#0d1117; color:#c9d1d9; margin:0; padding:24px; }
+  h1 { font-size:18px; margin:0 0 4px; } h2 { font-size:14px; color:#8b949e; margin:28px 0 8px; text-transform:uppercase; letter-spacing:.06em; }
+  .sub { color:#8b949e; margin-bottom:20px; }
+  .cards { display:flex; gap:12px; flex-wrap:wrap; }
+  .card { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:12px 18px; min-width:120px; }
+  .card .v { font-size:24px; font-weight:600; } .card .k { color:#8b949e; font-size:11px; text-transform:uppercase; }
+  table { border-collapse:collapse; width:100%; } th, td { text-align:left; padding:8px 10px; border-bottom:1px solid #21262d; }
+  th { color:#8b949e; font-weight:500; font-size:12px; } td { font-size:13px; }
+  a { color:#58a6ff; text-decoration:none; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; }
+  .b-running { background:#1f3a5f; color:#79c0ff; } .b-pr { background:#1a3b2a; color:#56d364; }
+  .b-fail { background:#4a2020; color:#f85149; } .b-disp { background:#3a2f1a; color:#d29922; }
+  .b-done { background:#2d333b; color:#adbac7; }
+  pre { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:8px 10px; font-size:12px; overflow:auto; max-height:200px; }
+</style>
+</head>
+<body>
+<h1>Devin Automation — Superset Remediation</h1>
+<div class="sub" id="meta">loading…</div>
+
+<h2>Metrics</h2>
+<div class="cards" id="cards"></div>
+
+<h2>Runs</h2>
+<table id="runs">
+  <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>ACUs</th><th>Started</th><th></th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const fmt = t => new Date(t*1000).toLocaleString();
+const badge = s => {
+  const cls = s.startsWith('running') ? 'b-running' : s==='pr_opened' ? 'b-pr'
+    : (s==='failed'||s==='error') ? 'b-fail' : s==='dispatched' ? 'b-disp' : 'b-done';
+  return `<span class="badge ${cls}">${s}</span>`;
+};
+async function load() {
+  const [metrics, runs] = await Promise.all([
+    fetch('/api/metrics').then(r=>r.json()),
+    fetch('/api/runs').then(r=>r.json()),
+  ]);
+  document.getElementById('meta').textContent =
+    `target repo: HirenRMistry/superset — refreshed ${new Date().toLocaleTimeString()} (auto-refresh 15s)`;
+  const cardDefs = [
+    ['Total runs', metrics.total_runs], ['Active', metrics.active],
+    ['Completed', metrics.completed], ['Failed', metrics.failed],
+    ['PRs opened', metrics.prs_opened],
+    ['Success rate', metrics.success_rate==null?'—':(metrics.success_rate*100).toFixed(0)+'%'],
+    ['ACUs', metrics.total_acus],
+    ['Avg time→done', metrics.avg_time_to_done_s? metrics.avg_time_to_done_s+'s':'—'],
+  ];
+  document.getElementById('cards').innerHTML =
+    cardDefs.map(([k,v])=>`<div class="card"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  document.querySelector('#runs tbody').innerHTML = runs.map(r => `
+    <tr>
+      <td>${r.id}</td>
+      <td><a href="${r.issue_url}">#${r.issue_number}</a> ${r.issue_title.slice(0,60)}</td>
+      <td>${badge(r.status)}</td>
+      <td>${r.devin_session_url?`<a href="${r.devin_session_url}">session</a>`:'—'}</td>
+      <td>${r.pr_url?`<a href="${r.pr_url}">PR</a>`:'—'}</td>
+      <td>${r.acus_consumed??'—'}</td>
+      <td>${fmt(r.created_at)}</td>
+      <td><a href="#" onclick="events(${r.id});return false">events</a></td>
+    </tr>`).join('');
+}
+async function events(id) {
+  const ev = await fetch(`/api/runs/${id}/events`).then(r=>r.json());
+  alert(ev.map(e=>`${fmt(e.ts)}  ${e.message}`).join('\n'));
+}
+load();
+</script>
+</body>
+</html>
