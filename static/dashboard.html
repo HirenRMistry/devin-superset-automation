@@ -55,7 +55,7 @@ async function load() {
     ['PRs opened', metrics.prs_opened],
     ['Success rate', metrics.success_rate==null?'—':(metrics.success_rate*100).toFixed(0)+'%'],
     ['ACUs', metrics.total_acus],
-    ['Avg time→done', metrics.avg_time_to_done_s? metrics.avg_time_to_done_s+'s':'—'],
+    ['Cycle time', metrics.avg_time_to_done_s? metrics.avg_time_to_done_s+'s':'—'],
   ];
   document.getElementById('cards').innerHTML =
     cardDefs.map(([k,v])=>`<div class="card"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
