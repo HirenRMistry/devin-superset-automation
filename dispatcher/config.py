@@ -12,6 +12,7 @@ class Config:
     dispatch_label: str
     webhook_secret: str
     simulate: bool
+    auto_nudge: bool
     poll_interval_s: int
     max_acu_limit: int | None
     db_path: str
@@ -27,6 +28,7 @@ def load() -> Config:
         dispatch_label=os.environ.get("DISPATCH_LABEL", "devin-fix"),
         webhook_secret=os.environ.get("GITHUB_WEBHOOK_SECRET", ""),
         simulate=os.environ.get("SIMULATE", "").lower() in {"1", "true", "yes"},
+        auto_nudge=os.environ.get("AUTO_NUDGE", "").lower() in {"1", "true", "yes"},
         poll_interval_s=int(os.environ.get("POLL_INTERVAL_S", "60")),
         max_acu_limit=(int(v) if (v := os.environ.get("MAX_ACU_LIMIT")) else None),
         db_path=os.environ.get("DB_PATH", "/data/runs.db" if os.path.isdir("/data") else "runs.db"),

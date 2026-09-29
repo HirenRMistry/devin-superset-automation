@@ -102,6 +102,16 @@ def poll_once() -> list[dict]:
             if run["status"] != f"running:{detail}":
                 store.update_run(run["id"], status=f"running:{detail}")
                 store.event(run["id"], f"session running ({detail})")
+            if cfg.auto_nudge and detail in {"waiting_for_approval", "waiting_for_user"}:
+                try:
+                    devin.send_message(
+                        sid,
+                        f"Approved — proceed. The change is in scope for issue "
+                        f"#{run['issue_number']} on {cfg.target_repo}; open the PR when done.",
+                    )
+                    store.event(run["id"], f"auto-nudged session ({detail})")
+                except Exception as e:
+                    store.event(run["id"], f"auto-nudge failed: {e}")
             continue
 
         if status not in TERMINAL_SESSION_STATES:

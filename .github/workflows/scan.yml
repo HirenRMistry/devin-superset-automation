@@ -39,6 +39,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Install pip-audit for Python CVE scanning
+        run: pip install pip-audit
+
       - name: Run scanner
         working-directory: automation
         run: |
