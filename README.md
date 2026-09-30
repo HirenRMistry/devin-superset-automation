@@ -2,7 +2,7 @@
 
 Event-driven remediation pipeline for a fork of [Apache Superset](https://github.com/apache/superset), powered by the [Devin API](https://docs.devin.ai/api-reference/overview).
 
-A scanner finds security vulnerabilities and code-quality/type-safety debt in the target repo and files GitHub issues. A dispatcher watches for issues labeled `devin-fix` and spins up Devin sessions — in parallel — that open pull requests back on the repo. A dashboard reports run status, success rate, cycle time, and ACU consumption.
+A scanner finds security vulnerabilities and code-quality/type-safety debt in the target repo and files GitHub issues. A dispatcher watches for issues labeled `devin-fix` and spins up Devin sessions — in parallel — that open pull requests back on the repo. A dashboard reports run status, success rate, cycle time, and per-session effort (agent messages / session size).
 
 ## Architecture
 
@@ -22,7 +22,7 @@ A scanner finds security vulnerabilities and code-quality/type-safety debt in th
             │                      │       ▼                      │
             ▼                      │  Devin session → opens PR    │
    GitHub issues on          ◀─────│  poll status → comment on    │
-   HirenRMistry/superset           │  issue, record PR + ACUs     │
+   HirenRMistry/superset           │  issue, record PR            │
                                    └──────────┬──────────────────┘
                                               ▼
                                    Dashboard `/` + `/api/metrics`
@@ -35,10 +35,10 @@ A scanner finds security vulnerabilities and code-quality/type-safety debt in th
 | Path | What it does |
 |---|---|
 | `scanner/scan.py` | Scans a Superset checkout for `: any` hotspots, direct `antd` imports, `eslint-disable` suppressions, `npm audit` vulns, and `pip-audit` CVEs against `requirements/base.txt`. Emits `findings.json`; with `--create-issues` upserts labeled GitHub issues. Stdlib + optional scanner binaries. |
-| `dispatcher/` | FastAPI service. Receives GitHub `issues` webhooks (HMAC-verified) **or** polls the repo for `devin-fix` issues. Creates Devin sessions with a structured-output schema, polls them, records PRs/ACUs in SQLite, comments progress back on each issue. Optional `AUTO_NUDGE` replies to sessions stuck in `waiting_for_approval` so the loop stays autonomous. |
+| `dispatcher/` | FastAPI service. Receives GitHub `issues` webhooks (HMAC-verified) **or** polls the repo for `devin-fix` issues. Creates Devin sessions with a structured-output schema, polls them, records PRs and session metadata in SQLite, comments progress back on each issue. Optional `AUTO_NUDGE` replies to sessions stuck in `waiting_for_approval` so the loop stays autonomous. |
 | `scripts/demo.sh` | One-command demo: scan the fork → build & start the dispatcher → watcher auto-dispatches → dashboard live at `:8000`. |
 | `.github/workflows/scan.yml` | Scheduled scan (every 6h) → creates new issues → dispatcher picks them up. `workflow_dispatch` for manual runs. |
-| `static/dashboard.html` | Auto-refreshing ops dashboard: active/completed runs, PRs opened, success rate, ACU spend, per-run event log. |
+| `static/dashboard.html` | Auto-refreshing ops dashboard: queue, active/completed runs, PRs opened/merged, success rate, agent-message counts, per-run event log. |
 
 ## Devin session contract
 
@@ -91,7 +91,7 @@ The GH Action runs this on a schedule; new findings become `devin-fix` issues, w
 
 ## Observability
 
-- `GET /api/metrics` — totals, active/completed/failed, PRs opened, success rate, total ACUs, avg time-to-done
+- `GET /api/metrics` — totals, active/completed/failed, PRs opened/merged, success rate, total agent messages, avg time-to-done
 - `GET /api/runs` — every run with status (`dispatched`, `running:working`, `pr_opened`, `failed`, …)
 - `GET /api/runs/{id}/events` — per-run event log
 - Issue comments mirror the lifecycle so humans see progress where they already work

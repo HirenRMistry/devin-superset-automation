@@ -95,8 +95,6 @@ def poll_once() -> list[dict]:
 
         status = sess.get("status")
         detail = sess.get("status_detail")
-        if sess.get("acus_consumed") is not None:
-            store.update_run(run["id"], acus_consumed=sess["acus_consumed"])
 
         if status == "running":
             if run["status"] != f"running:{detail}":
@@ -145,8 +143,7 @@ def poll_once() -> list[dict]:
             except Exception:
                 pass
         else:
-            # enrich with insights (session_size, message count) — acus_consumed
-            # is not populated on org-scoped plans
+            # enrich with insights (session_size, message count)
             ins = {}
             try:
                 ins = devin.get_insights(sid)
@@ -164,8 +161,7 @@ def poll_once() -> list[dict]:
                     f"Devin session complete.\n\n"
                     f"- PR: {pr_url or 'none opened'}\n"
                     f"- Summary: {so.get('summary', 'n/a')}\n"
-                    f"- Checks passed: {so.get('checks_passed')}\n"
-                    f"- ACUs consumed: {sess.get('acus_consumed')}",
+                    f"- Checks passed: {so.get('checks_passed')}",
                 )
             except Exception:
                 pass

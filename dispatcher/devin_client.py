@@ -68,8 +68,7 @@ class DevinClient:
 
     def get_insights(self, session_id: str) -> dict:
         """Org-scoped insights: session_size, num_devin_messages, category,
-        structured_output. acus_consumed is present but unpopulated on
-        non-enterprise plans."""
+        structured_output."""
         # NB: the API ignores the devin_id filter — returns all sessions —
         # so match client-side on session_id.
         r = self._http.get(self._url("/sessions/insights"), timeout=30)
@@ -82,7 +81,7 @@ class DevinClient:
 
 class SimulatedDevinClient:
     """Stands in for the Devin API so the full pipeline can be demoed without
-    consuming ACUs. Sessions transition to 'exit'/'finished' after ~90s and
+    a live API key. Sessions transition to 'exit'/'finished' after ~90s and
     report a fake PR."""
 
     def __init__(self):
@@ -111,13 +110,11 @@ class SimulatedDevinClient:
                 "session_id": session_id,
                 "status": "running",
                 "status_detail": "working",
-                "acus_consumed": round(age / 30, 1),
             }
         return {
             "session_id": session_id,
             "status": "exit",
             "status_detail": "finished",
-            "acus_consumed": 3.0,
             "pull_requests": [
                 {
                     "pr_url": "https://github.com/example/pull/0",

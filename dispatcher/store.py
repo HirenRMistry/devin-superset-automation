@@ -22,7 +22,6 @@ class Store:
                     devin_session_url TEXT,
                     status TEXT NOT NULL DEFAULT 'dispatched',
                     pr_url TEXT,
-                    acus_consumed REAL,
                     structured_output TEXT,
                     devin_messages INTEGER,
                     session_size TEXT,
@@ -136,12 +135,8 @@ class Store:
     def metrics(self) -> dict:
         with self._conn() as c:
             rows = c.execute(
-                "SELECT status, COUNT(*) n, COALESCE(SUM(acus_consumed),0) acus "
-                "FROM runs GROUP BY status"
+                "SELECT status, COUNT(*) n FROM runs GROUP BY status"
             ).fetchall()
-            total_acus = c.execute(
-                "SELECT COALESCE(SUM(acus_consumed),0) FROM runs"
-            ).fetchone()[0]
             total_msgs = c.execute(
                 "SELECT COALESCE(SUM(devin_messages),0) FROM runs"
             ).fetchone()[0]
@@ -165,7 +160,6 @@ class Store:
                 "failed": failed,
                 "prs_opened": prs,
                 "prs_merged": merged,
-                "total_acus": round(total_acus, 2),
                 "total_devin_messages": total_msgs,
                 "success_rate": round(done / (done + failed), 3) if (done + failed) else None,
                 "avg_time_to_done_s": round(avg_secs, 1) if avg_secs else None,
