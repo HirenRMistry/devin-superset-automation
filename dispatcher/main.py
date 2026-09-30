@@ -216,6 +216,21 @@ def api_runs():
     return store.all_runs()
 
 
+@app.get("/api/issues")
+def api_issues():
+    """Open issues carrying the dispatch label — the pending queue."""
+    issues = gh.list_labeled_issues(cfg.dispatch_label)
+    return [
+        {
+            "number": i["number"],
+            "title": i["title"],
+            "url": i["html_url"],
+            "queued": not store.has_nonfailed_run(i["number"]),
+        }
+        for i in issues
+    ]
+
+
 @app.get("/api/runs/{run_id}/events")
 def api_run_events(run_id: int):
     return store.run_events(run_id)

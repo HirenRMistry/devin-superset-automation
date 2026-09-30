@@ -29,6 +29,12 @@
 <h2>Metrics</h2>
 <div class="cards" id="cards"></div>
 
+<h2>Queue — labeled issues awaiting dispatch</h2>
+<table id="issues">
+  <thead><tr><th>#</th><th>Issue</th><th>State</th></tr></thead>
+  <tbody></tbody>
+</table>
+
 <h2>Runs</h2>
 <table id="runs">
   <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>ACUs</th><th>Started</th><th></th></tr></thead>
@@ -43,9 +49,10 @@ const badge = s => {
   return `<span class="badge ${cls}">${s}</span>`;
 };
 async function load() {
-  const [metrics, runs] = await Promise.all([
+  const [metrics, runs, issues] = await Promise.all([
     fetch('/api/metrics').then(r=>r.json()),
     fetch('/api/runs').then(r=>r.json()),
+    fetch('/api/issues').then(r=>r.json()).catch(()=>[]),
   ]);
   document.getElementById('meta').textContent =
     `target repo: HirenRMistry/superset — refreshed ${new Date().toLocaleTimeString()} (auto-refresh 15s)`;
@@ -59,6 +66,12 @@ async function load() {
   ];
   document.getElementById('cards').innerHTML =
     cardDefs.map(([k,v])=>`<div class="card"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  document.querySelector('#issues tbody').innerHTML = issues.map(i => `
+    <tr>
+      <td>${i.number}</td>
+      <td><a href="${i.url}">${i.title.slice(0,70)}</a></td>
+      <td>${i.queued ? '<span class="badge b-disp">queued</span>' : '<span class="badge b-done">dispatched</span>'}</td>
+    </tr>`).join('') || '<tr><td colspan="3" style="color:#8b949e">no labeled issues</td></tr>';
   document.querySelector('#runs tbody').innerHTML = runs.map(r => `
     <tr>
       <td>${r.id}</td>
