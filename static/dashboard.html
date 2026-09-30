@@ -44,7 +44,7 @@
 <script>
 const fmt = t => new Date(t*1000).toLocaleString();
 const badge = s => {
-  const cls = s.startsWith('running') ? 'b-running' : s==='pr_opened' ? 'b-pr'
+  const cls = s.startsWith('running') ? 'b-running' : (s==='pr_opened'||s==='merged') ? 'b-pr'
     : (s==='failed'||s==='error') ? 'b-fail' : s==='dispatched' ? 'b-disp' : 'b-done';
   return `<span class="badge ${cls}">${s}</span>`;
 };
@@ -59,7 +59,7 @@ async function load() {
   const cardDefs = [
     ['Total runs', metrics.total_runs], ['Active', metrics.active],
     ['Completed', metrics.completed], ['Failed', metrics.failed],
-    ['PRs opened', metrics.prs_opened],
+    ['PRs opened', metrics.prs_opened], ['PRs merged', metrics.prs_merged ?? 0],
     ['Success rate', metrics.success_rate==null?'—':(metrics.success_rate*100).toFixed(0)+'%'],
     ['ACUs', metrics.total_acus],
     ['Cycle time', metrics.avg_time_to_done_s? metrics.avg_time_to_done_s+'s':'—'],

@@ -50,7 +50,7 @@ class Store:
         with self._conn() as c:
             row = c.execute(
                 "SELECT 1 FROM runs WHERE issue_number=? AND status NOT IN "
-                "('pr_opened','finished','failed','error') LIMIT 1",
+                "('pr_opened','finished','failed','error','merged') LIMIT 1",
                 (issue_number,),
             ).fetchone()
             return row is not None
@@ -103,7 +103,14 @@ class Store:
         with self._conn() as c:
             rows = c.execute(
                 "SELECT * FROM runs WHERE status NOT IN "
-                "('pr_opened','finished','failed','error') AND devin_session_id IS NOT NULL"
+                "('pr_opened','finished','failed','error','merged') AND devin_session_id IS NOT NULL"
+            ).fetchall()
+            return [dict(r) for r in rows]
+
+    def pr_open_runs(self) -> list[dict]:
+        with self._conn() as c:
+            rows = c.execute(
+                "SELECT * FROM runs WHERE status='pr_opened' AND devin_session_id IS NOT NULL"
             ).fetchall()
             return [dict(r) for r in rows]
 
@@ -131,9 +138,12 @@ class Store:
             prs = c.execute(
                 "SELECT COUNT(*) FROM runs WHERE pr_url IS NOT NULL"
             ).fetchone()[0]
-            done = sum(r["n"] for r in rows if r["status"] in ("pr_opened", "finished"))
+            merged = c.execute(
+                "SELECT COUNT(*) FROM runs WHERE status='merged'"
+            ).fetchone()[0]
+            done = sum(r["n"] for r in rows if r["status"] in ("pr_opened", "finished", "merged"))
             failed = sum(r["n"] for r in rows if r["status"] in ("failed", "error"))
-            active = sum(r["n"] for r in rows if r["status"] not in ("pr_opened", "finished", "failed", "error"))
+            active = sum(r["n"] for r in rows if r["status"] not in ("pr_opened", "finished", "failed", "error", "merged"))
             avg_secs = c.execute(
                 "SELECT AVG(updated_at - created_at) FROM runs "
                 "WHERE status IN ('pr_opened','finished')"
@@ -144,6 +154,7 @@ class Store:
                 "completed": done,
                 "failed": failed,
                 "prs_opened": prs,
+                "prs_merged": merged,
                 "total_acus": round(total_acus, 2),
                 "success_rate": round(done / (done + failed), 3) if (done + failed) else None,
                 "avg_time_to_done_s": round(avg_secs, 1) if avg_secs else None,

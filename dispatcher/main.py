@@ -146,6 +146,26 @@ def poll_once() -> list[dict]:
             except Exception:
                 pass
         updates.append({"run_id": run["id"], "status": status, "pr_url": pr_url})
+
+    # second pass: runs whose PRs are open — track merge via the session's
+    # pull_requests[].pr_state (Devin reports 'merged' itself)
+    for run in store.pr_open_runs():
+        try:
+            sess = devin.get_session(run["devin_session_id"])
+        except Exception:
+            continue
+        prs = sess.get("pull_requests") or []
+        if any(p.get("pr_state") == "merged" for p in prs):
+            store.update_run(run["id"], status="merged")
+            store.event(run["id"], "PR merged")
+            try:
+                gh.comment(run["issue_number"], "PR merged — remediation complete. Closing this issue.")
+                gh._http.patch(
+                    f"https://api.github.com/repos/{cfg.target_repo}/issues/{run['issue_number']}",
+                    json={"state": "closed"}, timeout=30)
+            except Exception:
+                pass
+            updates.append({"run_id": run["id"], "status": "merged"})
     return updates
 
 
