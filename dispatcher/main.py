@@ -145,9 +145,18 @@ def poll_once() -> list[dict]:
             except Exception:
                 pass
         else:
+            # enrich with insights (session_size, message count) — acus_consumed
+            # is not populated on org-scoped plans
+            ins = {}
+            try:
+                ins = devin.get_insights(sid)
+            except Exception:
+                pass
             new_status = "pr_opened" if pr_url else "finished"
             store.update_run(run["id"], status=new_status, pr_url=pr_url,
-                             structured_output=as_json(so) or None)
+                             structured_output=as_json(so) or None,
+                             devin_messages=ins.get("num_devin_messages"),
+                             session_size=ins.get("session_size"))
             store.event(run["id"], f"session finished; pr={pr_url}")
             try:
                 gh.comment(

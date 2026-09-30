@@ -13,6 +13,7 @@ class Store:
             c.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS runs (
+
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     issue_number INTEGER NOT NULL,
                     issue_title TEXT NOT NULL,
@@ -23,6 +24,8 @@ class Store:
                     pr_url TEXT,
                     acus_consumed REAL,
                     structured_output TEXT,
+                    devin_messages INTEGER,
+                    session_size TEXT,
                     error TEXT,
                     created_at REAL NOT NULL,
                     updated_at REAL NOT NULL
@@ -35,6 +38,10 @@ class Store:
                 );
                 """
             )
+            cols = {r[1] for r in c.execute("PRAGMA table_info(runs)")}
+            for col, typ in (("devin_messages", "INTEGER"), ("session_size", "TEXT")):
+                if col not in cols:
+                    c.execute(f"ALTER TABLE runs ADD COLUMN {col} {typ}")
 
     @contextmanager
     def _conn(self):
@@ -135,6 +142,9 @@ class Store:
             total_acus = c.execute(
                 "SELECT COALESCE(SUM(acus_consumed),0) FROM runs"
             ).fetchone()[0]
+            total_msgs = c.execute(
+                "SELECT COALESCE(SUM(devin_messages),0) FROM runs"
+            ).fetchone()[0]
             prs = c.execute(
                 "SELECT COUNT(*) FROM runs WHERE pr_url IS NOT NULL"
             ).fetchone()[0]
@@ -156,6 +166,7 @@ class Store:
                 "prs_opened": prs,
                 "prs_merged": merged,
                 "total_acus": round(total_acus, 2),
+                "total_devin_messages": total_msgs,
                 "success_rate": round(done / (done + failed), 3) if (done + failed) else None,
                 "avg_time_to_done_s": round(avg_secs, 1) if avg_secs else None,
                 "by_status": {r["status"]: r["n"] for r in rows},

@@ -37,7 +37,7 @@
 
 <h2>Runs</h2>
 <table id="runs">
-  <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>ACUs</th><th>Started</th><th></th></tr></thead>
+  <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>Msgs</th><th>ACUs</th><th>Started</th><th></th></tr></thead>
   <tbody></tbody>
 </table>
 
@@ -61,7 +61,7 @@ async function load() {
     ['Completed', metrics.completed], ['Failed', metrics.failed],
     ['PRs opened', metrics.prs_opened], ['PRs merged', metrics.prs_merged ?? 0],
     ['Success rate', metrics.success_rate==null?'—':(metrics.success_rate*100).toFixed(0)+'%'],
-    ['ACUs', metrics.total_acus],
+    ['ACUs', metrics.total_acus], ['Agent msgs', metrics.total_devin_messages ?? '—'],
     ['Cycle time', metrics.avg_time_to_done_s? metrics.avg_time_to_done_s+'s':'—'],
   ];
   document.getElementById('cards').innerHTML =
@@ -79,6 +79,7 @@ async function load() {
       <td>${badge(r.status)}</td>
       <td>${r.devin_session_url?`<a href="${r.devin_session_url}">session</a>`:'—'}</td>
       <td>${r.pr_url?`<a href="${r.pr_url}">PR</a>`:'—'}</td>
+      <td>${r.devin_messages??'—'}</td>
       <td>${r.acus_consumed??'—'}</td>
       <td>${fmt(r.created_at)}</td>
       <td><a href="#" onclick="events(${r.id});return false">events</a></td>

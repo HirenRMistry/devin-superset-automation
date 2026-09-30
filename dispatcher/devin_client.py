@@ -66,6 +66,19 @@ class DevinClient:
         r.raise_for_status()
         return r.json()
 
+    def get_insights(self, session_id: str) -> dict:
+        """Org-scoped insights: session_size, num_devin_messages, category,
+        structured_output. acus_consumed is present but unpopulated on
+        non-enterprise plans."""
+        # NB: the API ignores the devin_id filter — returns all sessions —
+        # so match client-side on session_id.
+        r = self._http.get(self._url("/sessions/insights"), timeout=30)
+        r.raise_for_status()
+        for item in r.json().get("items") or []:
+            if item.get("session_id") == session_id:
+                return item
+        return {}
+
 
 class SimulatedDevinClient:
     """Stands in for the Devin API so the full pipeline can be demoed without
@@ -122,3 +135,10 @@ class SimulatedDevinClient:
 
     def send_message(self, session_id: str, message: str) -> dict:
         return {"ok": True}
+
+    def get_insights(self, session_id: str) -> dict:
+        return {
+            "session_size": "xs",
+            "num_devin_messages": random.randint(10, 40),
+            "category": "refactoring_and_optimization",
+        }
