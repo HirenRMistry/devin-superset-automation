@@ -156,11 +156,12 @@ async def watcher_loop():
             poll_once()
         except Exception:
             log.exception("poll_once failed")
-        try:
-            for issue in gh.list_labeled_issues(cfg.dispatch_label):
-                dispatch_issue(issue)
-        except Exception:
-            log.exception("label watcher failed")
+        if cfg.auto_dispatch:
+            try:
+                for issue in gh.list_labeled_issues(cfg.dispatch_label):
+                    dispatch_issue(issue)
+            except Exception:
+                log.exception("label watcher failed")
         await asyncio.sleep(cfg.poll_interval_s)
 
 
