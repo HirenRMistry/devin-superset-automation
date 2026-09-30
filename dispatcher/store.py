@@ -50,7 +50,7 @@ class Store:
         with self._conn() as c:
             row = c.execute(
                 "SELECT 1 FROM runs WHERE issue_number=? AND status NOT IN "
-                "('pr_opened','finished','failed','error','merged') LIMIT 1",
+                "('pr_opened','finished','failed','error','merged','suspended') LIMIT 1",
                 (issue_number,),
             ).fetchone()
             return row is not None
@@ -61,7 +61,7 @@ class Store:
         with self._conn() as c:
             row = c.execute(
                 "SELECT 1 FROM runs WHERE issue_number=? AND status NOT IN "
-                "('failed','error') LIMIT 1",
+                "('failed','error','suspended') LIMIT 1",
                 (issue_number,),
             ).fetchone()
             return row is not None
@@ -103,7 +103,7 @@ class Store:
         with self._conn() as c:
             rows = c.execute(
                 "SELECT * FROM runs WHERE status NOT IN "
-                "('pr_opened','finished','failed','error','merged') AND devin_session_id IS NOT NULL"
+                "('pr_opened','finished','failed','error','merged','suspended') AND devin_session_id IS NOT NULL"
             ).fetchall()
             return [dict(r) for r in rows]
 
@@ -142,8 +142,8 @@ class Store:
                 "SELECT COUNT(*) FROM runs WHERE status='merged'"
             ).fetchone()[0]
             done = sum(r["n"] for r in rows if r["status"] in ("pr_opened", "finished", "merged"))
-            failed = sum(r["n"] for r in rows if r["status"] in ("failed", "error"))
-            active = sum(r["n"] for r in rows if r["status"] not in ("pr_opened", "finished", "failed", "error", "merged"))
+            failed = sum(r["n"] for r in rows if r["status"] in ("failed", "error", "suspended"))
+            active = sum(r["n"] for r in rows if r["status"] not in ("pr_opened", "finished", "failed", "error", "merged", "suspended"))
             avg_secs = c.execute(
                 "SELECT AVG(updated_at - created_at) FROM runs "
                 "WHERE status IN ('pr_opened','finished')"

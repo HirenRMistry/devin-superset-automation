@@ -114,6 +114,21 @@ def poll_once() -> list[dict]:
                     store.event(run["id"], f"auto-nudge failed: {e}")
             continue
 
+        if status == "suspended":
+            store.update_run(run["id"], status="suspended", error=detail,
+                             structured_output=as_json(sess.get("structured_output")) or None)
+            store.event(run["id"], f"session suspended: {detail}")
+            try:
+                gh.comment(
+                    run["issue_number"],
+                    f"Devin session suspended (`{detail}`) — not completed. "
+                    f"Re-dispatch this issue to retry.",
+                )
+            except Exception:
+                pass
+            updates.append({"run_id": run["id"], "status": "suspended"})
+            continue
+
         if status not in TERMINAL_SESSION_STATES:
             continue
 
