@@ -104,7 +104,7 @@ async function load() {
       <td>${r.pr_url?`<a href="${r.pr_url}" target="_blank" rel="noopener">PR</a>`:'—'}</td>
       <td>${r.devin_messages??'—'}</td>
       <td>${r.session_size??'—'}</td>
-      <td>${dur(r.updated_at - r.created_at)}</td>
+      <td>${DONE.includes(r.status) ? dur(r.updated_at - r.created_at) : '—'}</td>
       <td>${fmt(r.created_at)}</td>
       <td><a href="#" onclick="events(${r.id});return false">events</a></td>
     </tr>`).join('');
