@@ -100,6 +100,11 @@ def poll_once() -> list[dict]:
             if run["status"] != f"running:{detail}":
                 store.update_run(run["id"], status=f"running:{detail}")
                 store.event(run["id"], f"session running ({detail})")
+            # surface the PR as soon as Devin opens it — don't wait for exit
+            prs = sess.get("pull_requests") or []
+            if prs and not run.get("pr_url"):
+                store.update_run(run["id"], pr_url=prs[0]["pr_url"])
+                store.event(run["id"], f"PR opened mid-session: {prs[0]['pr_url']}")
             if cfg.auto_nudge and detail in {"waiting_for_approval", "waiting_for_user"}:
                 try:
                     devin.send_message(
