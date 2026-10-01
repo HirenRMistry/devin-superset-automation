@@ -97,15 +97,33 @@ def poll_once() -> list[dict]:
         detail = sess.get("status_detail")
 
         if status == "running":
+            prs = sess.get("pull_requests") or []
+            # work done, PR open, session parked awaiting review — hand off to
+            # merge tracking instead of nudging forever
+            if prs and detail == "waiting_for_user":
+                if not run.get("pr_url"):
+                    store.update_run(run["id"], pr_url=prs[0]["pr_url"])
+                store.update_run(run["id"], status="pr_opened")
+                store.event(run["id"], "PR open; session awaiting review — tracking for merge")
+                if cfg.auto_nudge:
+                    try:
+                        devin.send_message(
+                            sid,
+                            "The PR is open — no further changes needed. You may "
+                            "finish the session; a human will review and merge.",
+                        )
+                    except Exception:
+                        pass
+                updates.append({"run_id": run["id"], "status": "pr_opened", "pr_url": prs[0]["pr_url"]})
+                continue
             if run["status"] != f"running:{detail}":
                 store.update_run(run["id"], status=f"running:{detail}")
                 store.event(run["id"], f"session running ({detail})")
             # surface the PR as soon as Devin opens it — don't wait for exit
-            prs = sess.get("pull_requests") or []
             if prs and not run.get("pr_url"):
                 store.update_run(run["id"], pr_url=prs[0]["pr_url"])
                 store.event(run["id"], f"PR opened mid-session: {prs[0]['pr_url']}")
-            if cfg.auto_nudge and detail in {"waiting_for_approval", "waiting_for_user"}:
+            if cfg.auto_nudge and detail == "waiting_for_approval":
                 try:
                     devin.send_message(
                         sid,
