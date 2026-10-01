@@ -37,12 +37,13 @@
 
 <h2>Runs</h2>
 <table id="runs">
-  <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>Msgs</th><th>Size</th><th>Started</th><th></th></tr></thead>
+  <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>Msgs</th><th>Size</th><th>Cycle</th><th>Started</th><th></th></tr></thead>
   <tbody></tbody>
 </table>
 
 <script>
 const fmt = t => new Date(t*1000).toLocaleString();
+const dur = s => s>=3600 ? (s/3600).toFixed(1)+'h' : s>=60 ? Math.round(s/60)+'m' : Math.round(s)+'s';
 const badge = s => {
   const cls = s.startsWith('running') ? 'b-running' : (s==='pr_opened'||s==='merged') ? 'b-pr'
     : (s==='failed'||s==='error') ? 'b-fail' : s==='dispatched' ? 'b-disp' : 'b-done';
@@ -81,6 +82,7 @@ async function load() {
       <td>${r.pr_url?`<a href="${r.pr_url}">PR</a>`:'—'}</td>
       <td>${r.devin_messages??'—'}</td>
       <td>${r.session_size??'—'}</td>
+      <td>${dur(r.updated_at - r.created_at)}</td>
       <td>${fmt(r.created_at)}</td>
       <td><a href="#" onclick="events(${r.id});return false">events</a></td>
     </tr>`).join('');
