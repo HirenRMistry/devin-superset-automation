@@ -4,6 +4,8 @@ Event-driven remediation pipeline for a fork of [Apache Superset](https://github
 
 A scanner finds security vulnerabilities and code-quality/type-safety debt in the target repo and files GitHub issues. A dispatcher watches for issues labeled `devin-fix` and spins up Devin sessions — in parallel — that open pull requests back on the repo. A dashboard reports run status, success rate, cycle time, and per-session effort (agent messages / session size).
 
+**Why it matters:** engineers spend ~13.5 hrs/week — 42% of the workweek — on technical debt ([Stripe, *The Developer Coefficient*](https://stripe.com/files/reports/the-developer-coefficient.pdf)), and 84% of audited codebases carry at least one known open-source vulnerability, 74% a high-risk one ([Synopsys OSSRA 2024](https://news.synopsys.com/2024-02-27-New-Synopsys-Report-Finds-74-of-Codebases-Contained-High-Risk-Open-Source-Vulnerabilities,-Surging-54-Since-Last-Year)). This pipeline turns that backlog into an autonomous queue: detect → file → remediate → verify → merge.
+
 ## Architecture
 
 ```

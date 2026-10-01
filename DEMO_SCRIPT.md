@@ -7,12 +7,16 @@ at demo pace.
 
 **[Screen: GitHub issues tab on the Superset fork]**
 
-> Every repo accumulates security debt and modernization debt — CVEs in
-> pinned deps, `any` types, deprecated patterns. Fixing it is repetitive but
-> not mechanical: it needs judgment about breaking changes, tests, and
-> codebase conventions. I built an event-driven pipeline that detects this
-> debt, files issues, and dispatches Devin sessions to remediate it
-> autonomously — end to end, from scan to merged PR.
+> Stripe's Developer Coefficient study found engineers spend 13.5 hours a
+> week on technical debt — 42% of the average workweek, roughly $85
+> billion a year in lost productivity. And Synopsys's 2024 OSSRA audit
+> found 84% of commercial codebases contain at least one known open-source
+> vulnerability — 74% had a *high-risk* one. So the debt is massive, it's
+> measurable, and it mostly sits in a queue because fixing it is
+> repetitive but not mechanical: it needs judgment about breaking changes,
+> tests, and codebase conventions. I built an event-driven pipeline that
+> detects this debt, files issues, and dispatches Devin sessions to
+> remediate it autonomously — end to end, from scan to merged PR.
 
 ## 0:30–1:15 — Architecture
 
