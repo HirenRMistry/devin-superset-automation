@@ -57,6 +57,17 @@ at demo pace.
 > chose pyjwt 2.15.0 over 2.15.1 specifically because 2.15.1 was only two
 > days old — supply-chain caution you can't get from regex.
 
+**[Screen: `dispatcher/main.py` — scroll `dispatch_issue` and `poll_once`, ~15s]**
+
+> Quick look at the code. Two decisions matter. First, dispatch is
+> idempotent — `has_nonfailed_run` means a recurring scan or a retried
+> webhook can never double-spend sessions on the same issue. Second, I ask
+> Devin for structured output — a JSON schema with `pr_url`, `summary`,
+> `checks_passed` — so reporting is machine-readable rather than parsing
+> prose. The poller treats Devin's own `status_detail` as the state
+> machine: `waiting_for_approval` gets a scoped auto-nudge, `suspended`
+> is terminal, `pr_state: merged` closes the loop.
+
 ## 2:45–3:45 — The loop closes
 
 **[Screen: GitHub — the new PR, then issue #38 history showing merged PR #41]**
@@ -88,11 +99,18 @@ at demo pace.
 > first, and the system closed it cleanly; and structured output, so
 > results are machine-readable, not prose.
 
-## 4:30–5:00 — Close
+## 4:30–5:00 — Next steps + close
 
+> In a real engagement I'd swap the scanner for the customer's real
+> signals — Sentry rollups, Dependabot alerts, Linear tickets; the
+> dispatcher doesn't care what writes the label. I'd move prompts into
+> Devin playbooks and knowledge per repo, add approval gates so only
+> small fixes auto-dispatch, and close the review loop — CI failure or a
+> PR comment nudges the same session back to work until merge.
+>
 > To recap: a scheduled scanner finds real vulnerabilities, issues route
-> to parallel Devin sessions, PRs get tracked to merge, and the whole loop
-> is observable on the dashboard. Everything's Dockerized —
+> to parallel Devin sessions, PRs get tracked to merge, and the whole
+> loop is observable on the dashboard. Everything's Dockerized —
 > `docker compose up` plus one curl — and the repos are public. Thanks.
 
 ## Recording tips
