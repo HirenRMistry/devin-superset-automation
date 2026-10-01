@@ -96,6 +96,10 @@ The GH Action runs this on a schedule; new findings become `devin-fix` issues, w
 - `GET /api/runs/{id}/events` — per-run event log
 - Issue comments mirror the lifecycle so humans see progress where they already work
 
+## Demo
+
+[DEMO_SCRIPT.md](DEMO_SCRIPT.md) has a timed 5-minute Loom walkthrough: problem framing → architecture → live dispatch → merged PR → metrics, plus recording tips.
+
 ## Extending this in a real engagement
 
 - Swap the scanner for real signals: Sentry rollups, Dependabot/npm-audit findings, Devin code-scan results, Linear/Jira ticket creation
