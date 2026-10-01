@@ -197,6 +197,15 @@ def poll_once() -> list[dict]:
             sess = devin.get_session(run["devin_session_id"])
         except Exception:
             continue
+        # enrich runs that reached pr_opened via the mid-session hand-off
+        # (they never pass through the exit branch)
+        if run.get("devin_messages") is None:
+            try:
+                ins = devin.get_insights(run["devin_session_id"])
+                store.update_run(run["id"], devin_messages=ins.get("num_devin_messages"),
+                                 session_size=ins.get("session_size"))
+            except Exception:
+                pass
         prs = sess.get("pull_requests") or []
         if any(p.get("pr_state") == "merged" for p in prs):
             store.update_run(run["id"], status="merged")
