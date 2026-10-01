@@ -92,16 +92,16 @@ async function load() {
   document.querySelector('#issues tbody').innerHTML = issues.map(i => `
     <tr>
       <td>${i.number}</td>
-      <td><a href="${i.url}">${i.title.slice(0,70)}</a></td>
+      <td><a href="${i.url}" target="_blank" rel="noopener">${i.title.slice(0,70)}</a></td>
       <td>${i.queued ? '<span class="badge b-disp">queued</span>' : '<span class="badge b-done">dispatched</span>'}</td>
     </tr>`).join('') || '<tr><td colspan="3" style="color:#8b949e">no labeled issues</td></tr>';
   document.querySelector('#runs tbody').innerHTML = runs.map(r => `
     <tr>
       <td>${r.id}</td>
-      <td><a href="${r.issue_url}">#${r.issue_number}</a> ${r.issue_title.slice(0,60)}</td>
+      <td><a href="${r.issue_url}" target="_blank" rel="noopener">#${r.issue_number}</a> ${r.issue_title.slice(0,60)}</td>
       <td>${badge(r.status)}</td>
-      <td>${r.devin_session_url?`<a href="${r.devin_session_url}">session</a>`:'—'}</td>
-      <td>${r.pr_url?`<a href="${r.pr_url}">PR</a>`:'—'}</td>
+      <td>${r.devin_session_url?`<a href="${r.devin_session_url}" target="_blank" rel="noopener">session</a>`:'—'}</td>
+      <td>${r.pr_url?`<a href="${r.pr_url}" target="_blank" rel="noopener">PR</a>`:'—'}</td>
       <td>${r.devin_messages??'—'}</td>
       <td>${r.session_size??'—'}</td>
       <td>${dur(r.updated_at - r.created_at)}</td>
