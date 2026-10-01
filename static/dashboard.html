@@ -19,6 +19,7 @@
   .b-running { background:#1f3a5f; color:#79c0ff; } .b-pr { background:#1a3b2a; color:#56d364; }
   .b-fail { background:#4a2020; color:#f85149; } .b-disp { background:#3a2f1a; color:#d29922; }
   .b-done { background:#2d333b; color:#adbac7; }
+  .stat-label { color:#8b949e; font-size:12px; margin-bottom:6px; }
   pre { background:#161b22; border:1px solid #30363d; border-radius:6px; padding:8px 10px; font-size:12px; overflow:auto; max-height:200px; }
 </style>
 </head>
@@ -35,14 +36,15 @@
   <tbody></tbody>
 </table>
 
-<h2>Avg cycle time by issue type</h2>
-<div id="bytype"></div>
-
 <h2>Runs</h2>
 <table id="runs">
   <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>Msgs</th><th>Size</th><th>Cycle</th><th>Started</th><th></th></tr></thead>
   <tbody></tbody>
 </table>
+
+<h2>Stats</h2>
+<div class="stat-label">Avg cycle time by issue type</div>
+<div id="bytype"></div>
 
 <script>
 const fmt = t => new Date(t*1000).toLocaleString();
