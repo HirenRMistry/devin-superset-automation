@@ -35,6 +35,9 @@
   <tbody></tbody>
 </table>
 
+<h2>Avg cycle time by issue type</h2>
+<div id="bytype"></div>
+
 <h2>Runs</h2>
 <table id="runs">
   <thead><tr><th>#</th><th>Issue</th><th>Status</th><th>Devin Session</th><th>PR</th><th>Msgs</th><th>Size</th><th>Cycle</th><th>Started</th><th></th></tr></thead>
@@ -44,6 +47,8 @@
 <script>
 const fmt = t => new Date(t*1000).toLocaleString();
 const dur = s => s>=3600 ? (s/3600).toFixed(1)+'h' : s>=60 ? Math.round(s/60)+'m' : Math.round(s)+'s';
+const typeOf = t => (t.match(/^(\w+(\([\w-]+\))?)\s*:/) || [,'task'])[1];
+const DONE = ['pr_opened','finished','merged'];
 const badge = s => {
   const cls = s.startsWith('running') ? 'b-running' : (s==='pr_opened'||s==='merged') ? 'b-pr'
     : (s==='failed'||s==='error') ? 'b-fail' : s==='dispatched' ? 'b-disp' : 'b-done';
@@ -67,6 +72,21 @@ async function load() {
   ];
   document.getElementById('cards').innerHTML =
     cardDefs.map(([k,v])=>`<div class="card"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  // avg cycle time per issue type (completed runs only)
+  const byType = {};
+  runs.filter(r=>DONE.includes(r.status)).forEach(r=>{
+    const t = typeOf(r.issue_title);
+    (byType[t] = byType[t]||[]).push(r.updated_at - r.created_at);
+  });
+  const entries = Object.entries(byType).map(([t,v])=>[t, v.reduce((a,b)=>a+b,0)/v.length, v.length]);
+  const max = Math.max(...entries.map(e=>e[1]), 1);
+  document.getElementById('bytype').innerHTML = entries.length ? entries.map(([t,avg,n])=>`
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0">
+      <div style="width:140px;color:#8b949e;font-size:12px">${t}</div>
+      <div style="background:#1f3a5f;height:18px;border-radius:4px;width:${Math.max(4,avg/max*60)}%"></div>
+      <div style="font-size:12px">${dur(avg)} <span style="color:#8b949e">(${n} run${n>1?'s':''})</span></div>
+    </div>`).join('')
+    : '<div style="color:#8b949e;font-size:12px">no completed runs yet</div>';
   document.querySelector('#issues tbody').innerHTML = issues.map(i => `
     <tr>
       <td>${i.number}</td>
