@@ -151,7 +151,7 @@ class Store:
             active = sum(r["n"] for r in rows if r["status"] not in ("pr_opened", "finished", "failed", "error", "merged", "suspended"))
             avg_secs = c.execute(
                 "SELECT AVG(updated_at - created_at) FROM runs "
-                "WHERE status IN ('pr_opened','finished')"
+                "WHERE status IN ('pr_opened','finished','merged')"
             ).fetchone()[0]
             return {
                 "total_runs": sum(r["n"] for r in rows),
