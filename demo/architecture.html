@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Architecture</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"SF Mono",Menlo,monospace; background:#0d1117; color:#c9d1d9;
+         height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:60px; }
+  h1 { font-size:20px; color:#8b949e; font-weight:500; letter-spacing:.08em; text-transform:uppercase; }
+  .row { display:flex; align-items:center; gap:24px; }
+  .box { background:#161b22; border:1px solid #30363d; border-radius:12px; padding:20px 28px; text-align:center; min-width:190px; }
+  .box .t { font-size:18px; font-weight:600; }
+  .box .d { font-size:12px; color:#8b949e; margin-top:6px; line-height:1.5; }
+  .box.blue { border-color:#58a6ff; }
+  .box.green { border-color:#56d364; }
+  .arrow { color:#484f58; font-size:26px; }
+  .lane { display:flex; flex-direction:column; gap:6px; font-size:11px; color:#484f58; align-items:center; }
+  .foot { font-size:13px; color:#484f58; }
+</style>
+</head>
+<body>
+  <h1>Event-driven remediation pipeline</h1>
+  <div class="row">
+    <div class="box">
+      <div class="t">Scanner</div>
+      <div class="d">GitHub Actions, cron every 6h<br>pip-audit · npm audit ·<br>tsc/eslint heuristics</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="box">
+      <div class="t">GitHub Issues</div>
+      <div class="d">on the Superset fork<br><code>devin-fix</code> label = queue<br>title-deduped</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="box blue">
+      <div class="t">Dispatcher</div>
+      <div class="d">FastAPI · Docker<br>webhook + poll watcher<br>idempotent · auto-nudge</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="box blue">
+      <div class="t">Devin API</div>
+      <div class="d">parallel v3 sessions<br>structured output schema<br>status_detail state machine</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="box green">
+      <div class="t">PR → merge</div>
+      <div class="d">tracked via pr_state<br>issue auto-commented<br>+ auto-closed</div>
+    </div>
+  </div>
+  <div class="foot">dashboard: queue · runs · PRs merged · success rate · cycle time · agent effort</div>
+</body>
+</html>
