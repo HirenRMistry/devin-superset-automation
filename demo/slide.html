@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cold open</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin:0; }
+  body { font-family:-apple-system,"SF Mono",Menlo,monospace; background:#0d1117; color:#c9d1d9;
+         height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:56px; }
+  .stats { display:flex; gap:80px; }
+  .stat { text-align:center; }
+  .stat .n { font-size:72px; font-weight:700; color:#58a6ff; }
+  .stat .l { font-size:15px; color:#8b949e; max-width:300px; margin-top:8px; }
+  .stat .s { font-size:11px; color:#484f58; margin-top:4px; }
+  .flow { font-size:22px; display:flex; align-items:center; gap:18px; color:#c9d1d9; }
+  .flow .step { background:#161b22; border:1px solid #30363d; border-radius:10px; padding:14px 22px; }
+  .flow .step.devin { border-color:#58a6ff; }
+  .flow .arrow { color:#484f58; }
+  .flow .cap { position:absolute; margin-top:64px; font-size:12px; color:#484f58; }
+  .flow .wrap { position:relative; display:flex; flex-direction:column; align-items:center; }
+</style>
+</head>
+<body>
+  <div class="stats">
+    <div class="stat">
+      <div class="n">42%</div>
+      <div class="l">of developer time goes to technical debt &amp; maintenance</div>
+      <div class="s">Stripe — The Developer Coefficient</div>
+    </div>
+    <div class="stat">
+      <div class="n">84%</div>
+      <div class="l">of codebases contain at least one known open-source vulnerability</div>
+      <div class="s">Synopsys OSSRA 2024</div>
+    </div>
+  </div>
+  <div class="flow">
+    <div class="wrap"><div class="step">scan</div><div class="cap">cron + pip-audit</div></div>
+    <div class="arrow">→</div>
+    <div class="wrap"><div class="step">issue</div><div class="cap">devin-fix label</div></div>
+    <div class="arrow">→</div>
+    <div class="wrap"><div class="step devin">Devin session</div><div class="cap">parallel, structured output</div></div>
+    <div class="arrow">→</div>
+    <div class="wrap"><div class="step">PR</div><div class="cap">tracked to merge</div></div>
+    <div class="arrow">→</div>
+    <div class="wrap"><div class="step">closed</div><div class="cap">issue auto-closed</div></div>
+  </div>
+</body>
+</html>
