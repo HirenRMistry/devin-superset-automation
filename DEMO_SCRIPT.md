@@ -24,9 +24,9 @@ at demo pace.
 
 > Three components. A **scanner** runs on a cron in GitHub Actions — it
 > audits Python deps with pip-audit, npm deps with `npm audit`, and scans
-> TypeScript for `any` hotspots, direct antd imports, and eslint
-> suppressions. Findings become **GitHub issues** labeled `devin-fix` —
-> deduplicated by title so re-scans don't spam.
+> TypeScript for uses of the `any` type, direct ant design imports, and eslint
+> suppressions. Findings become **GitHub issues** with the `devin-fix` label —
+> which are deduplicated by title so re-scans don't spam.
 >
 > A **dispatcher** — a FastAPI service, Dockerized — watches for labeled
 > issues via webhook or polling, creates a **Devin session** per issue with
