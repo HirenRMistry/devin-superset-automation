@@ -38,7 +38,6 @@ A scanner finds security vulnerabilities and code-quality/type-safety debt in th
 |---|---|
 | `scanner/scan.py` | Scans a Superset checkout for `: any` hotspots, direct `antd` imports, `eslint-disable` suppressions, `npm audit` vulns, and `pip-audit` CVEs against `requirements/base.txt`. Emits `findings.json`; with `--create-issues` upserts labeled GitHub issues. Stdlib + optional scanner binaries. |
 | `dispatcher/` | FastAPI service. Receives GitHub `issues` webhooks (HMAC-verified) **or** polls the repo for `devin-fix` issues. Creates Devin sessions with a structured-output schema, polls them, records PRs and session metadata in SQLite, comments progress back on each issue. Optional `AUTO_NUDGE` replies to sessions stuck in `waiting_for_approval` so the loop stays autonomous. |
-| `scripts/demo.sh` | One-command demo: scan the fork → build & start the dispatcher → watcher auto-dispatches → dashboard live at `:8000`. |
 | `.github/workflows/scan.yml` | Scheduled scan (every 6h) → creates new issues → dispatcher picks them up. `workflow_dispatch` for manual runs. |
 | `static/dashboard.html` | Auto-refreshing ops dashboard: queue, active/completed runs, PRs opened/merged, success rate, agent-message counts, per-run event log. |
 
@@ -57,20 +56,20 @@ Session states (`new → claimed → running → exit`) are polled; `pull_reques
 ## Quick start (dry-run demo — no Devin key needed)
 
 ```bash
-./scripts/demo.sh          # scans ../superset, starts the dispatcher in SIMULATE mode
-open http://localhost:8000 # watch the dashboard
+cp .env.example .env
+# edit .env: set GH_TOKEN and TARGET_REPO, keep SIMULATE=true
+docker compose up --build        # dispatcher + dashboard on :8000
 ```
 
-Or manually:
+Then trigger a run — either label an existing issue `devin-fix` (the watcher picks it up within `POLL_INTERVAL_S`) or dispatch one directly:
 
 ```bash
-cp .env.example .env
-# edit .env: set GH_TOKEN and TARGET_REPO, set SIMULATE=true
-docker compose up --build
-curl -X POST http://localhost:8000/dispatch/1     # dispatch issue #1
+curl -X POST http://localhost:8000/dispatch/{N}   # N = an open issue number on the fork
 ```
 
 Simulated sessions finish in ~90s and record a fake PR so you can see the whole loop: issue → session → PR → metrics.
+
+To scan the target repo locally: `python3 scanner/scan.py --repo ../superset` (add `--create-issues` to file labeled issues).
 
 ## Real run
 
