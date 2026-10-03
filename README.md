@@ -99,7 +99,7 @@ The GH Action runs this on a schedule; new findings become `devin-fix` issues, w
 
 ## Demo
 
-[DEMO_SCRIPT.md](DEMO_SCRIPT.md) has a timed 5-minute Loom walkthrough: problem framing → architecture → live dispatch → merged PR → metrics, plus recording tips.
+[demo/SCRIPT.md](demo/SCRIPT.md) has a timed 5-minute Loom walkthrough: problem framing → architecture → live dispatch → merged PR → metrics, plus recording tips. `demo/` also holds two optional recording slides (`slide.html`, `architecture.html`).
 
 ## Extending this in a real engagement
 
